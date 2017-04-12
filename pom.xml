@@ -19,6 +19,7 @@
       <kafka.major.version>0.10</kafka.major.version>
       <kafka.version>0.10.0.1</kafka.version>
       <java.version>1.8</java.version>
+      <storm.kafka.version>1.0.2</storm.kafka.version>
   </properties>
 
 
@@ -67,29 +68,29 @@
     </dependency>
 
     <!--
+    -->
     <dependency>
 	<groupId>com.twitter.heron</groupId>
 	<artifactId>heron-kafka</artifactId>
-	<version>0.14.3</version>
+	<version>${heron.version}</version>
     </dependency>
-    -->
     <!--
     <dependency>
       <groupId>org.apache.storm</groupId>
       <artifactId>kafka-spout</artifactId>
       <version>SNAPSHOT</version>
     </dependency>
-    -->
     <dependency>
 	<groupId>org.apache.storm</groupId>
 	<artifactId>storm-kafka</artifactId>
-	<version>1.0.0</version>
+	<version>${storm.kafka.version}</version>
     </dependency>
     <dependency>
 	<groupId>org.apache.storm</groupId>
 	<artifactId>storm-kafka-client</artifactId>
-	<version>1.0.0</version>
+	<version>${storm.kafka.version}</version>
     </dependency>
+    -->
 
     <dependency>
 	<groupId>org.apache.logging.log4j</groupId>

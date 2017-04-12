@@ -12,10 +12,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 
-//note: backtype.storm packages do not build with kafka, need to use
-//org.apache.storm packages for using kafka with heron
 import org.apache.storm.Config;
-import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.StormSubmitter;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.InvalidTopologyException;
@@ -34,11 +31,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.storm.kafka.KafkaSpout;
 import org.apache.storm.kafka.SpoutConfig;
+//import org.apache.storm.spout.RawMultiScheme;
+import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.kafka.StringScheme;
 import org.apache.storm.kafka.ZkHosts;
-
-//heron 0.14.6
-//import com.twitter.heron.common.basics.ByteAmount;
 
 
 /**
@@ -72,6 +68,7 @@ public final class KafkaCountTopology {
         Integer val = countMap.get(key);
         countMap.put(key, ++val);
       }
+      System.out.println("countMap: " + countMap);
       collector.ack(tuple);
     }
 
@@ -88,36 +85,28 @@ public final class KafkaCountTopology {
     int numStmgrs = 2;
     int numInstancesConsumer = 2;
 
-    //String zkServerHosts = "localhost:2181";
     String zkServerHosts = "localhost";
     int zkPort = 2181;
     String kafkaTopic = "test";
     int kafkaPartitions = 1;
 
 
-    //--------- kafka word spout ------
-    //-- original
-    ////BrokerHosts hosts = new ZkHosts(zkConnString);
-    //ZkHosts hosts = new ZkHosts(zkServerHosts);
-
-    //SpoutConfig spoutConfig = new SpoutConfig(hosts, kafkaTopic, "/" + kafkaTopic, UUID.randomUUID().toString());
-    //spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
-    //spoutConfig.zkPort = zkPort;
-    //-- original
-
-
-    //-- alternative
-    //String zkServerHost = config.get("zk").toString().split(":")[0];    //just a host name without port
+    //--------- for kafka word spout ------
     ZkHosts hosts = new ZkHosts(zkServerHosts);
 
     SpoutConfig spoutConfig = new SpoutConfig(hosts, kafkaTopic, "/" + kafkaTopic, UUID.randomUUID().toString());
     spoutConfig.zkServers = Arrays.asList(new String[]{ zkServerHosts });
     spoutConfig.zkPort = zkPort;
 
-    //spoutConfig.scheme = new CustomRawMultiScheme();
+    //to get the kafka message as a tuple with key 'bytes' and value a byte
+    //array without any parsing by kafka spout
+    //spoutConfig.scheme = new RawMultiScheme();  
+
+    //to get the kafka message as a tuple with key 'str' and value a string
     spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
+
+    //start reading the kafka topic from the most recent message
     spoutConfig.startOffsetTime = kafka.api.OffsetRequest.LatestTime();
-    //-- alternative
     //----------------------------------
     
     TopologyBuilder builder = new TopologyBuilder();
@@ -130,17 +119,23 @@ public final class KafkaCountTopology {
     Config conf = new Config();
     conf.setNumStmgrs(numStmgrs);
 
+    //--------- for kafka word spout ------
+    //NOTE: MUST set these parameters or kafka spout will run into null pointer
+    //exceptions, even though these parameters are not part of spoutConfig;
+    //kafka spout assumes these parameters to be set in the topology
+    //configuration, and throws unhelpful exceptions otherwise
+    conf.put("storm.zookeeper.session.timeout", 20000);
+    conf.put("storm.zookeeper.connection.timeout", 15000);
+    conf.put("storm.zookeeper.retry.times", 5); 
+    conf.put("storm.zookeeper.retry.interval", 1000);
+    //----------------------------------
+
+
     long MEGABYTE = 1024 * 1024;
     long maxContainerDisk = 100L * MEGABYTE;
    
-    //heron 0.14.5
-    //conf.setContainerMaxRamHint(maxContainerRam); 
     conf.setContainerMaxDiskHint(maxContainerDisk); 
     conf.setContainerDiskRequested(500L * MEGABYTE);
-
-    //heron 0.14.6
-    //conf.setContainerMaxDiskHint(ByteAmount.fromBytes(maxContainerDisk)); 
-    //conf.setContainerDiskRequested(ByteAmount.fromBytes(500L * MEGABYTE));
 
     conf.setContainerPaddingPercentage(5); 
 
