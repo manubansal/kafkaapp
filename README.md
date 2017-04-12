@@ -6,10 +6,11 @@ of using a word-generating spout.
 
 ## Requirements
 
-* Kafka version 2.11-0.10.0.1 (follow setup instructions on Apache Kafka release page)
-* Heron version 0.14.5 (follow setup instructions on Twitter Heron release page)
-* Python 2.7.6 (may work with python3 too)
-* kafka-python: `sudo pip install kafka-python`
+* Apache Kafka, tested with version 2.11-0.10.0.1 (follow setup instructions on Apache Kafka release page)
+* Twitter Heron, tested with version 0.14.5 (follow setup instructions on Twitter Heron release page)
+* Python, tested with version 2.7.6 (may work with python3 too)
+* kafka-python, tested with version 1.3.3, `sudo pip install kafka-python`
+* Apache Maven, tested with version 3.0.5
 
 ## Setup Kafka
 
