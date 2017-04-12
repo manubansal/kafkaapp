@@ -54,6 +54,7 @@ You can verify the event stream with a counting unbounded consumer:
 #python consumer using kafka-python
 $ ./counting_consumer.py <topic> <epr>
 $ ./counting_consumer.py test 1000
+```
 
 topic: kafka topic to consume messages from  
 epr: events/messages per report (expected eps)
